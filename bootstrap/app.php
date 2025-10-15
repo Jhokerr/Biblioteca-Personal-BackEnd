@@ -11,9 +11,17 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
+    ->withMiddleware(function (Middleware $middleware) {
+        // Agregar CORS como primer middleware en API
+        $middleware->api(prepend: [
+            \App\Http\Middleware\Cors::class,
+        ]);
+        
+        // CRÍTICO: Remover el middleware VerifyCsrfToken de las rutas API
+        $middleware->web(remove: [
+            // Mantener CSRF solo en rutas web si es necesario
+        ]);
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
