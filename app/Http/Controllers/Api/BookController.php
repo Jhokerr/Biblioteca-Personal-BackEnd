@@ -8,23 +8,25 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
-     // Mostrar todos los libros
+    // Mostrar solo los libros del usuario autenticado
     public function index(Request $request)
-{
-    $search = $request->input('search');
+    {
+        $search = $request->input('search');
+        $user = $request->user(); // Obtener usuario autenticado
 
-    if ($search) {
-        $books = Book::where('title', 'LIKE', "%{$search}%")
-                     ->orWhere('author', 'LIKE', "%{$search}%")
-                     ->paginate(9); // Pagina los resultados de la búsqueda
-    } else {
-        $books = Book::paginate(9); // Pagina todos los libros, 10 por página
+        if ($search) {
+            $books = Book::where('user_id', $user->id)
+                         ->where('title', 'LIKE', "%{$search}%")
+                         ->orWhere('author', 'LIKE', "%{$search}%")
+                         ->paginate(9);
+        } else {
+            $books = Book::where('user_id', $user->id)->paginate(9);
+        }
+
+        return response()->json($books);
     }
 
-    return response()->json($books);
-}
-
-    // Guardar un nuevo libro
+    // Guardar un nuevo libro (asociado al usuario autenticado)
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -38,19 +40,29 @@ class BookController extends Controller
             'reading_status' => 'nullable|string', 
         ]);
 
+        // Agregar el usuario autenticado
+        $validatedData['user_id'] = $request->user()->id;
+
         $book = Book::create($validatedData);
-        return response()->json($book, 201); // 201: Creado
+        return response()->json($book, 201);
     }
 
-    // Mostrar un libro específico
-    public function show(Book $book)
+    // Mostrar un libro específico (solo si pertenece al usuario)
+    public function show(Book $book, Request $request)
     {
+        if ($book->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
         return response()->json($book);
     }
 
-    // Actualizar un libro
+    // Actualizar un libro (solo si pertenece al usuario)
     public function update(Request $request, Book $book)
     {
+        if ($book->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
@@ -66,14 +78,14 @@ class BookController extends Controller
         return response()->json($book);
     }
 
-    // Eliminar un libro
-    public function destroy(Book $book)
+    // Eliminar un libro (solo si pertenece al usuario)
+    public function destroy(Request $request, Book $book)
     {
+        if ($book->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
         $book->delete();
-        return response()->json(null, 204); // 204: Sin Contenido
+        return response()->json(null, 204);
     }
-
-    
 }
-
-

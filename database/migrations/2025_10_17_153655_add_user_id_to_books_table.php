@@ -9,17 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('books', function (Blueprint $table) {
-            $table->integer('published_year')->nullable();
-            $table->integer('pages')->nullable();
-            $table->string('cover_url')->nullable();
-            $table->string('reading_status')->default('Por Leer');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
         });
     }
 
     public function down(): void
     {
         Schema::table('books', function (Blueprint $table) {
-            $table->dropColumn(['published_year', 'pages', 'cover_url', 'reading_status']);
+            $table->dropForeignIdFor('users');
         });
     }
 };
