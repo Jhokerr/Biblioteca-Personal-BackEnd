@@ -10,19 +10,16 @@ class Cors
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Obtener el origen de la petición
-        $origin = $request->headers->get('Origin') ?? 'http://localhost:5173';
-        
         $allowedOrigins = [
-            'http://localhost:5173',
-            'http://127.0.0.1:5173',
-            'http://localhost:3000',
+            'https://biblioteca-personal-front-end.vercel.app',  // Tu frontend en Vercel
+            'http://localhost:5173',                              // Local desarrollo
+            'http://127.0.0.1:5173',                             // Local desarrollo
         ];
 
-        // Verificar si el origen está permitido
-        $allowOrigin = in_array($origin, $allowedOrigins) ? $origin : 'http://localhost:5173';
+        $origin = $request->headers->get('Origin');
+        $allowOrigin = in_array($origin, $allowedOrigins) ? $origin : 'https://biblioteca-personal-front-end.vercel.app';
 
-        // Maneja las solicitudes OPTIONS (preflight)
+        // Responder a preflight requests (OPTIONS)
         if ($request->getMethod() === "OPTIONS") {
             return response('', 200)
                 ->header('Access-Control-Allow-Origin', $allowOrigin)
@@ -31,14 +28,14 @@ class Cors
                 ->header('Access-Control-Max-Age', '86400');
         }
 
-        // Procesar la petición
         $response = $next($request);
 
-        // Agregar headers CORS a la respuesta
-        $response->headers->set('Access-Control-Allow-Origin', $allowOrigin);
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
-
-        return $response;
+        return $response
+            ->header('Access-Control-Allow-Origin', $allowOrigin)
+            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
     }
 }
+
+
+
