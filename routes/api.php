@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Api\BookController;
+use App\Http\Controllers\BookController;
 
 // Rutas públicas (sin autenticación)
 Route::post('/register', [AuthController::class, 'register']);
@@ -13,6 +13,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     
-    // Rutas del CRUD de libros
+    // CRUD de libros
     Route::apiResource('books', BookController::class);
 });
