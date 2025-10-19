@@ -1,2 +1,2 @@
-web: php -S 0.0.0.0:${PORT:-8080} -t public/ -d display_errors=1
+web: vendor/bin/heroku-php-apache2 -d default_charset=UTF-8 public/
 release: php artisan migrate --force
