@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BookController;
+use App\Http\Controllers\Api\BookController;
 
 // Ruta de prueba
 Route::get('/', function () {
