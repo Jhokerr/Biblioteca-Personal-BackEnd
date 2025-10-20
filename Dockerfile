@@ -1,24 +1,25 @@
-FROM php:8.2-apache
+FROM php:8.2-fpm
 
-WORKDIR /var/www/html
+WORKDIR /app
 
 # Instalar extensiones necesarias
-RUN docker-php-ext-install pdo pdo_mysql
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_mysql \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copiar archivos del proyecto
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copiar archivos
 COPY . .
 
 # Instalar dependencias PHP
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer install --optimize-autoloader --no-dev
-
-# Configurar Apache
-RUN a2enmod rewrite
-RUN echo '<Directory /var/www/html/public>\n    AllowOverride All\n</Directory>' > /etc/apache2/sites-available/000-default.conf
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Permisos
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 8000
 
-CMD ["apache2-foreground"]
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public/"]
